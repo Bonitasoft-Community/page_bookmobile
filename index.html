@@ -1,0 +1,407 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <title>Book Mobile</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="style/animate.css" />
+    <link rel="stylesheet" href="style/bootstrap.min.css">
+	<link rel="stylesheet" href="style/main.css">
+	<link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/ng-modal.css">
+	<link rel="stylesheet" href="style/angular-material.min.css">
+	<link rel="stylesheet" href="style/toaster.css">
+
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<style>
+.Loading {
+    display: inline-block;
+    vertical-align: middle;
+    background-position: center;
+    background:no-repeat;
+    background-image: url('data:image/gif;base64,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');
+    width:20px;
+    height:20px;
+    margin-top:6px;
+    margin-right:7px;
+}
+.AutocompleteDropDown {
+	background-color: #fcf8e3;
+	}
+	
+	
+</style>
+
+
+
+</head>
+<body ng-app="bookmobilemonitor">
+
+<!-- Show the directory currently used - remove it on a production server to not display the internal disk structure -->
+<!--  Page Directory: @_PAGEDIRECTORY_@ -->
+
+<div class="bs-component" ng-controller="BookMobileController as ctrl">
+	<div>
+		<center>
+			<table>
+				<tr>
+					<td><h1>Book Mobile</h1></td>
+					<td rowspan="2"><img src="img/bookmobile.jpg" width="150"
+						heigth="150" /></td>
+				</tr>
+				<tr>
+					<td style="font-size: 0.8em">V1.0.0 Feb 2021</a></td>
+				</tr>
+				</div>
+			</table>
+		</center>
+	</div>
+
+
+  
+	<!--  ************************************************************  -->	
+	<!--  Catalog        	 										-->
+	<!--  ************************************************************  -->
+	<ul class="nav nav-tabs"  ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" style="border-bottom: 1px solid #c2c2c2;">
+		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="properties" active="true" title="Catalog" select="ctrl.navbaractiv == 'catalog'" class="{{ctrl.getNavClass('catalog')}}" style="{{ctrl.getNavStyle('catalog')}}">
+			  <a ng-click="ctrl.navbaractiv = 'catalog';"   class="ng-binding">Catalog</a>
+		</li>
+		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="properties" active="true" title="Catalog" select="ctrl.navbaractiv == 'model'" class="{{ctrl.getNavClass('model')}}" style="{{ctrl.getNavStyle('model')}}">
+			  <a ng-click="ctrl.navbaractiv = 'model';"   class="ng-binding">Model</a>
+		</li>
+		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="context" active="true" title="Calendars" select="ctrl.navbaractiv == 'calendars'" class="{{ctrl.getNavClass('calendars')}}" style="{{ctrl.getNavStyle('calendars')}}">
+			  <a  ng-click="ctrl.navbaractiv='calendars'"  class="ng-binding">Calendars</a>
+		</li>
+		<li ng-class="{active: active, disabled: false}" id="form-tab" heading="analysis" active="true" title="Execution" select="ctrl.navbaractiv == 'country'" class="{{ctrl.getNavClass('country')}}" style="{{ctrl.getNavStyle('country')}}">
+			  <a  ng-click="ctrl.navbaractiv='country'" class="ng-binding">Countries and currency</a>
+		</li>
+	</ul>
+
+	<!--  ************************************************************  -->	
+	<!--  Catalog        	 										-->
+	<!--  ************************************************************  -->		
+	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'catalog'">
+		<p>
+
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<a ng-click="ctrl.showlistcatalog = ! ctrl.showlistcatalog" ng-if="! ctrl.showlistcatalog"><span class="glyphicon glyphicon-chevron-right"></span></a>
+				<a ng-click="ctrl.showlistcatalog = ! ctrl.showlistcatalog" ng-if="ctrl.showlistcatalog"><span class="glyphicon glyphicon-chevron-down"></span></a>
+				List of Models 
+			</div>
+			<div class="panel-body" ng-if="ctrl.showlistcatalog">
+				<table class="table table-stripped table-condensed" >
+					<tr><th>Name</th><th>Description</th><th>Datasource</th><th>TableName</th></tr>
+					<tr ng-repeat= "catalog in ctrl.listcatalog">
+						<td><button class="btn btn-primary btn-sm" 
+								ng-click="ctrl.useModel( catalog )"><span class="glyphicon glyphicon-search"/></button>
+						&nbsp;{{catalog.name}}</td>
+						<td>{{catalog.description}}</td>
+						<td>{{catalog.datasource}}</td>
+						<td>{{catalog.tablename}}</td>
+				</table>
+			</div>
+		</div>
+		
+		<div ng-if="ctrl.showmodel !== null">
+			Content of {{ctrl.showmodel.name}}
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<a ng-click="ctrl.showsearch = ! ctrl.showsearch" ng-if="! ctrl.showsearch"><span class="glyphicon glyphicon-chevron-right"></span></a>
+					<a ng-click="ctrl.showsearch = ! ctrl.showsearch" ng-if="ctrl.showsearch"><span class="glyphicon glyphicon-chevron-down"></span></a>
+				
+					Search
+				</div>
+				<div ng-if="ctrl.showsearch">
+					<table class="table table-condensed">
+						<tr ng-repeat= "column in ctrl.showmodel.columns">
+							<td>{{ctrl.getColumnLabel( column )}}</td>
+							<td><input ng-model="ctrl.formmodel[ column.name]"/></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		<button class="btn btn-primary" ng-click="ctrl.searchDatas()" ng-disabled="ctrl.showmodel === null">Search</button>
+		
+		<div ng-bind-html="ctrl.getHtml( ctrl.searchlistevents )"></div>
+		
+		<table class="table table-stripped table-condensed table-bordered">
+			<tr>
+				<th></th>
+				<th ng-repeat= "column in ctrl.showmodel.columns">{{ctrl.getColumnLabel( column )}}</th>
+			</tr>
+			
+			<tr ng-repeat="item in ctrl.listdatas">
+				<td>
+				<button class="btn btn-primary btn-sm" 
+						ng-click="ctrl.showAddData=false;ctrl.showeditdata=true; ctrl.data = item">
+					<span class="glyphicon glyphicon-pencil"/></span>
+				</button>
+				</td>
+				<td ng-repeat= "column in ctrl.showmodel.columns">{{item[ column.name ]}}</th>
+			</tr>
+		</table>
+		<div ng-if="ctrl.showdata && ctrl.showdata.size() ==0">No datas</div>
+		
+		
+		
+		<div class="panel panel-default" ng-if="ctrl.showmodel.name">
+			<div class="panel-heading">
+				<a ng-click="ctrl.showeditdata = ! ctrl.showeditdata" ng-if="! ctrl.showeditdata"><span class="glyphicon glyphicon-chevron-right"></span></a>
+				<a ng-click="ctrl.showeditdata = ! ctrl.showeditdata" ng-if="ctrl.showeditdata"><span class="glyphicon glyphicon-chevron-down"></span></a>
+				Data&nbsp;
+					<div ng-if="ctrl.showAddData" class="label label-primary">New data</div>
+					<div ng-if="! ctrl.showAddData" class="label label-primary">Edit a data</div>
+					
+					<button ng-click="ctrl.showAddData = true; ctrl.showeditdata=true; ctrl.data= ctrl.getDataDefaultValue()" ng-if="! ctrl.showAddData">Access the Add Record form</button>
+			</div>
+			<div class="panel-body" ng-if="ctrl.showeditdata">
+				<table class="table table-striped table-hover table-bordered">
+				<tr ng-repeat= "column in ctrl.getListColums()">
+					<td> {{ctrl.getColumnLabel( column) }}</td>
+					<td style="padding-left:10px">
+						<!--  Read only data ?  -->
+						<div ng-if="ctrl.isColumnReadOnly( column )">
+							{{ctrl.data[ column.name ]}}
+						</div>
+						<div ng-if="! ctrl.isColumnReadOnly( column )">
+							<div ng-if="column.type ==='DECIMAL'">
+								<input ng-model="ctrl.data[ column.name ]" type="number">
+							</div>
+							<div ng-if="column.type ==='STRING'">
+								<input ng-model="ctrl.data[ column.name ]" size="{col.size}">
+							</div>
+							<div ng-if="column.type ==='TEXT' || column.type === 'BLOB'">
+								<textarea ng-model="ctrl.data[ column.name ]"> </textarea>
+							</div>								
+							<div ng-if="column.type ==='BOOLEAN'">
+								<input ng-model="ctrl.data[ column.name ]" type="checkbox"> </textarea>
+							</div>								
+							<div ng-if=" column.type !== 'DECIMAL' && column.type !== 'STRING' && column.type !=='TEXT' && column.type !== 'BLOB' && column.type !== 'BOOLEAN'">
+								<input ng-model="ctrl.data[ column.name ]">
+							</div>
+							{{column.tip}}
+						</div>
+					</td>
+							
+				</tr>
+			 	</table>
+			 	
+				<button ng-click="ctrl.addData()" ng-if="ctrl.showAddData" class="btn btn-primary">Add a Record</button>
+				<button ng-click="ctrl.updateData()"  ng-if="! ctrl.showAddData" class="btn btn-primary">Update the Record</button>
+				
+				<div ng-bind-html="ctrl.getHtml( ctrl.updatelistevents )"></div>
+			</div>
+		</div>
+		
+		Model={{ctrl.showmodel}}
+		
+	</div>
+	
+	<!--  ************************************************************  -->	
+	<!--  Model        	 										-->
+	<!--  ************************************************************  -->		
+	<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'model'">
+		<p>
+		<table width="100%">
+		<tr><td><h2>Model</h2></td><td style="text-align:right">
+			<button class="btn btn-success" ng-click="ctrl.addModel()">Add a model</button>&nbsp;
+			<button class="btn btn-success" ng-click="ctrl.addBdm()">Add a Bdm</button>
+			</td></tr>		
+		</table>
+		
+		
+		<table class="table table-stripped table-condensed">
+			<tr><th>Name</th><th>Description</th><th>Datasource</th><th>TableName</th></tr>
+			<tr ng-repeat= "catalog in ctrl.listcatalog">
+				<td><button class="btn btn-primary btn-sm" 
+						ng-click="ctrl.editModel( catalog.id )"><span class="glyphicon glyphicon-pencil"/></button>
+				&nbsp;{{catalog.name}} ({{catalog.type}})</td>
+				<td>{{catalog.description}}</td>
+				<td>{{catalog.datasourceName}}</td>
+				<td>{{catalog.tableName}}</td>
+				<td><button class="btn btn-danger" ng-click="ctrl.dropModel()"><span class="glyphicon glyphicon-minus"/></button>
+		</table>
+			
+		<!--  Model -->	
+		<div class="panel panel-info" ng-if="ctrl.showModelPanel ==='model'">
+			<div class="panel-heading">Model {{ctrl.model.name}}
+				<div style="float: right ">
+					<a ng-click="ctrl.showModelPanel=''"><span class="glyphicon glyphicon-remove"/></a>
+				</div>
+			</div>
+			<div class="panel-body">
+				<table class="table table-stripped table-condensed">
+					<tr><td>Model Id:						</td><td><i>{{ctrl.model.id}}</i></td></tr>
+						<tr><td>Name:							</td><td><input ng-model="ctrl.model.name"/></td></tr>
+						<tr><td>Description:					</td><td><textarea ng-model="ctrl.model.description"></textarea></td></tr>
+						<tr><td>Data source:					</td><td><input ng-model="ctrl.model.datasourceName" size="100"/><br>Example <i>java:comp/env/NotManagedBizDataDS</i></td></tr>
+						<tr><td>TableName:						</td><td><input ng-model="ctrl.model.tableName"/>&nbsp;<button class="btn btn-info btn-xs" ng-click="ctrl.populateFromTable()">Populate from the table</button></td></tr>
+						<tr><td>Unique ID:						</td><td><input ng-model="ctrl.model.colPersistenceIdName"/></td></tr>
+						<tr><td>Allow structure modification:	</td><td><input ng-model="ctrl.model.allowModifyStructure" type="checkbox"/></td></tr>
+						<tr><td colspan="2"> </td>
+					</tr>					
+				</table>
+				
+				<table class="table table-stripped table-condensed">
+					<tr>
+						<th>Name</th>
+						<th>Type (and size)</th>
+						<th>Label</th>
+						<th>Tip</th>
+						<th>Add</th>
+						<th>Update</th>
+					</tr>
+					<tbody ng-repeat="column in ctrl.model.columns">
+						<tr><td>
+								<button class="btn btn-danger btn-xs" ng-click="ctrl.removeModelColumn( column )"><span class="glyphicon glyphicon-minus"/></button>
+								<input ng-model="column.name"/></td>
+							<td><select ng-model="column.type">
+									<option value="STRING">String</option>
+									<option value="LONG">Long</option>
+									<option value="DATE">Date</option>
+									<option value="TEXT">Text</option>
+									<option value="BOOLEAN">Boolean</option>
+									<option value="BLOB">B/Clob (Text)</option>
+									<option value="DECIMAL">Decimal</option>
+								</select>
+								<input ng-model="column.size" ng-if="column.type === 'STRING'" type="number" style="width: 50px;"/>
+							</td>
+								
+							<td><input ng-model="column.label" size="20" style="width: 100px;"/></td>
+							<td><input ng-model="column.tip" size="20"/></td>
+							<td><input type="checkbox" ng-model="column.addReadOnly" title="The field is in Read Only when a record has to be added"/></td>
+							<td><input type="checkbox" ng-model="column.updateReadOnly"  title="The field is in Read Only when a record has to be updated"/></td>
+						</tr>
+						<tr>
+							<td colspan="1"></td>
+							<td colspan="2"><i>Default value:</i><br><input ng-model="column.addDefaultValue"/></td>
+							<td colspan="6"><i>SQL Default value:</i><br><input ng-model="column.addSqlValue" size="200" style="width: 500px;"/></td>
+						</tr>
+							
+					</tbody>
+					<tr><td><button class="btn btn-info btn-xs" ng-click="ctrl.addModelColumn()"><span class="glyphicon glyphicon-plus"/>Add a column</button></td></tr>
+				</table> 
+				<button class="btn btn-primary" ng-click="ctrl.updateModel()">Update the model</button>
+				<div ng-bind-html="ctrl.getHtml( ctrl.editmodellistevents )"></div>
+				
+			</div>
+		</div> <!--  end panel info model edition -->
+		
+		
+				<!--  BDM -->	
+		<div class="panel panel-info" ng-if="ctrl.showModelPanel ==='bdm'">
+			<div class="panel-heading">Bdm {{ctrl.model.name}}
+				<div style="float: right ">
+					<a ng-click="ctrl.showModelPanel=''"><span class="glyphicon glyphicon-remove"/></a>
+				</div>
+			</div>
+			<div class="panel-body">
+				<table class="table table-stripped table-condensed">
+					<tr><td>Bdm :						</td><td><i>{{ctrl.model.id}}</i></td></tr>
+					<tr><td>Name:							</td><td>
+						<select ng-model="ctrl.model.name">
+									<option ng-repeat=" option in ctrl.listbdmavailable" value="{{option}}"> {{option}}</option>
+							</select>
+						</td></tr>
+						<tr><td>Description:					</td><td><textarea ng-model="ctrl.model.description"></textarea></td></tr>
+						<tr><td>Unique ID:						</td><td>{{ctrl.model.colPersistenceIdName}}</td></tr>
+						<tr><td colspan="2"> </td>
+					</tr>					
+				</table>
+				
+				<table class="table table-stripped table-condensed">
+					<tr>
+						<th>Name</th>
+						<th>Type (and size)</th>
+						<th>Label</th>
+						<th>Tip</th>
+						<th>Add</th>
+						<th>Update</th>
+					</tr>
+					<tbody ng-repeat="column in ctrl.model.columns">
+						<tr><td>
+								
+								{{column.name}}</td>
+							<td><select ng-model="column.type" readonly=true>
+									<option value="STRING">String</option>
+									<option value="LONG">Long</option>
+									<option value="DATE">Date</option>
+									<option value="TEXT">Text</option>
+									<option value="BOOLEAN">Boolean</option>
+									<option value="BLOB">B/Clob (Text)</option>
+									<option value="DECIMAL">Decimal</option>
+								</select>
+								<div ng-if="column.type === 'STRING'">{{column.size}}</div>
+							</td>
+								
+							<td><input ng-model="column.label" size="20" style="width: 100px;"/></td>
+							<td><input ng-model="column.tip" size="20"/></td>
+							<td><input type="checkbox" readonly ng-model="column.addReadOnly" title="The field is in Read Only when a record has to be added"/></td>
+							<td><input type="checkbox" readonly ng-model="column.updateReadOnly"  title="The field is in Read Only when a record has to be updated"/></td>
+						</tr>
+						<tr>
+							<td colspan="1"></td>
+							<td colspan="2"><i>Default value:</i><br><input ng-model="column.addDefaultValue"/></td>
+							<td colspan="6"><i>SQL Default value:</i><br><input ng-model="column.addSqlValue" size="200" style="width: 500px;"/></td>
+						</tr>
+							
+					</tbody>
+				</table> 
+				<button class="btn btn-primary" ng-click="ctrl.updateModel()">Update the model</button>
+				<div ng-bind-html="ctrl.getHtml( ctrl.editmodellistevents )"></div>
+				
+			</div>
+		</div> <!--  end panel info model edition -->
+		
+	</div>
+	
+</div>
+
+
+<!-- Third party dependencies -->
+
+<script src="3rd-party/jquery.min.js"></script>
+
+<script src="3rd-party/angular.min.js"></script>
+
+<script src="3rd-party/angular-resource.min.js"></script>
+<script src="3rd-party/angular-cookies.min.js"></script>
+
+<script src="3rd-party/bootstrap/js/bootstrap.min.js"></script>
+<script src="3rd-party/angular-bootstrap-tpls.min.js"></script>
+<script src="3rd-party/angular-file-upload.js"></script>
+<script src="3rd-party/ng-google-chart.js"></script>
+<script src="3rd-party/angular-sanitize.min.js"></script>
+<script src="3rd-party/ng-modal.min.js"></script>
+
+<!--  Material (autocomplete) -->
+<script src="3rd-party/angular-animate.min.js"></script>
+<script src="3rd-party/angular-aria.min.js"></script>
+<script src="3rd-party/angular-messages.min.js"></script>
+<script src="3rd-party/angular-material.min.js"></script>
+
+
+
+
+<!-- Application dependencies -->
+<!-- to be sure to reload every time the JS file, add this marker -->
+<script src="pageResource?page=custompage_bookmobile&pos=3&location=bookmobilemonitor.js&t=@_CURRENTTIMEMILIS_@"></script>
+
+
+
+</body>
+</html>
