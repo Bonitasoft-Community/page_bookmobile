@@ -36,8 +36,8 @@ public class TableModel {
          */
         public String addSqlValue;
         
-        public boolean addReadOnly;
-        public boolean updateReadOnly;
+        public boolean addReadOnly=false;
+        public boolean updateReadOnly=false;
         
         public COLTYPE colType;
         public int colSize;
@@ -114,7 +114,7 @@ public class TableModel {
     public List<DataColumn> listDataColumn = new ArrayList<>();
     
     
-    TableModel.DataColumn addColumn(String colName, COLTYPE colType) {
+    public TableModel.DataColumn addColumn(String colName, COLTYPE colType) {
         DataColumn col = new DataColumn(colName, colType);
         listDataColumn.add( col ) ;
         return col;

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bonitasoft.custompage.bookmobile.tool.CastData;
+import org.bonitasoft.engine.session.APISession;
 import org.json.simple.JSONValue;
 
 public class BookMobileParameter {
@@ -23,8 +25,8 @@ public class BookMobileParameter {
     public static final String CST_DATA_FORM = "form";
     public static final String CST_DATA_MAXDATA = "maxdata";
     
-    long tenantId;
     public String name;
+    public String type;
     public Long id;
     public String description;
     public String datasource;
@@ -33,17 +35,20 @@ public class BookMobileParameter {
     public boolean allowModificationStructure;
     public Map<String,Object> dataForm;
     public int maxData;
+    public APISession apiSession;
     
     public List<Map<String,Object>> columns;
     
     public Map<String,Object> data;
     
-    public static BookMobileParameter getInstanceFromJsonSt( String jsonSt, long tenantId) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static BookMobileParameter getInstanceFromJsonSt( String jsonSt, APISession apiSession) {
         BookMobileParameter bookMobileParameter = new BookMobileParameter();
-        bookMobileParameter.tenantId = tenantId;
+        bookMobileParameter.apiSession = apiSession;
         final HashMap<String, Object> jsonHash = (HashMap<String, Object>) JSONValue.parse(jsonSt);
-        bookMobileParameter.id                          = (Long) jsonHash.get( CST_MODEL_ID );
+        bookMobileParameter.id                          = CastData.getLong( jsonHash.get( CST_MODEL_ID ),null);
         bookMobileParameter.name                        = (String) jsonHash.get( CST_MODEL_NAME);
+        bookMobileParameter.type                        = (String) jsonHash.get( CST_MODEL_TYPE);
         bookMobileParameter.description                 = (String) jsonHash.get( CST_MODEL_DESCRIPTION);
         bookMobileParameter.datasource                  = (String) jsonHash.get( CST_MODEL_DATASOURCENAME);
         bookMobileParameter.tablename                   = (String) jsonHash.get( CST_MODEL_TABLENAME);
@@ -69,9 +74,9 @@ public class BookMobileParameter {
         return bookMobileParameter;
     }
     
-    public static BookMobileParameter getInstanceFromTenantId( long tenantId) {
+    public static BookMobileParameter getInstanceFromApiSession( APISession apiSession) {
         BookMobileParameter bookMobileParameter = new BookMobileParameter();
-        bookMobileParameter.tenantId = tenantId;
+        bookMobileParameter.apiSession = apiSession;
         return bookMobileParameter;
     }
 }

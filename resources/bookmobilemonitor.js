@@ -183,7 +183,49 @@ appCommand.controller('BookMobileController',
 		var index =this.model.columns.indexOf( column );
 		this.model.columns.splice(index, 1);     
 	}
-	
+		// -----------------------------------------------------------------------------------------
+	//  										Bdm
+	// -----------------------------------------------------------------------------------------
+	this.changeBdm = function() {
+		this.inprogress=true;
+		var self=this;
+		var d = new Date();
+		$http.get( '?page=custompage_bookmobile&action=getBdmDefinition&name='+this.model.name+'&t='+d.getTime(), this.getHttpConfig() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				console.log("getBdmDefinition",jsonResult);
+				self.model 					= jsonResult.model;
+				self.editmodellistevents = jsonResult.listevents;
+				self.inprogress=false;
+			})
+		.error( function() {
+			self.inprogress=false;
+			});			
+	}
+
+	this.dropModel = function( id, name, type ) {
+		this.inprogress=true;
+		var self=this;
+		var d = new Date();
+		$http.get( '?page=custompage_bookmobile&action=dropmodel&id='+id+'&name='+name+'&type='+type+'&t='+d.getTime(), this.getHttpConfig() )
+			.success( function ( jsonResult, statusHttp, headers, config ) {
+				// connection is lost ?
+				if (statusHttp==401 || typeof jsonResult === 'string') {
+					console.log("Redirected to the login page !");
+					window.location.reload();
+				}
+				console.log("getBdmDefinition",jsonResult);
+				self.listcatalog 		= jsonResult.listcatalog;
+				self.inprogress=false;
+			})
+		.error( function() {
+			self.inprogress=false;
+			});			
+	}
 	// -----------------------------------------------------------------------------------------
 	//  										Use  Model
 	// -----------------------------------------------------------------------------------------
@@ -232,8 +274,7 @@ appCommand.controller('BookMobileController',
 			self.searchlistevents 		= jsonResult.listevents;
 		}
 	
-	
-	
+
 	// -----------------------------------------------------------------------------------------
 	//  										Data management
 	// -----------------------------------------------------------------------------------------

@@ -68,11 +68,17 @@ public class CatalogModel {
    
     public long id;
     private CatalogFactory catalogFactory;
+    private BdmFactory bdmFactory;
     
     public CatalogModel(Long id, CatalogFactory catalogFactory) {
         this.id = id;
         this.catalogFactory = catalogFactory;
     }
+    public CatalogModel(String name, BdmFactory bdmFactory) {
+        this.name = name;
+        this.bdmFactory  = bdmFactory;
+    }
+
     /* -------------------------------------------------------------------- */
     /*                                                                      */
     /* getter */
@@ -197,6 +203,7 @@ public class CatalogModel {
         StringBuilder analyse = new StringBuilder();
         this.name               = bookMobileParameter.name ==null ? "" : bookMobileParameter.name;
         this.description        = bookMobileParameter.description;
+        this.type               = TypeModel.valueOf(bookMobileParameter.type );
         this.datasourceName     = bookMobileParameter.datasource==null ? "" : bookMobileParameter.datasource;
         this.tableModel.tableName= bookMobileParameter.tablename==null ? "" : bookMobileParameter.tablename.toUpperCase();
         this.colPersistenceId   = bookMobileParameter.persistenceidname ==null ? "" : bookMobileParameter.persistenceidname;
@@ -224,10 +231,10 @@ public class CatalogModel {
         if (this.colPersistenceId.trim().length() == 0)
             analyse.append("A Unique ID column name must be provided;");
         
-        if (tableModel.getColumnByName( this.colPersistenceId) == null)
+        if (this.type == TypeModel.MODEL && this.getColumnByName( this.colPersistenceId) == null)
             analyse.append("the Unique ID must match an existing column;");
 
-        if (this.tableModel.tableName.trim().length() == 0)
+        if (this.type == TypeModel.MODEL &&this.tableModel.tableName.trim().length() == 0)
             analyse.append("A table name must be provided;");
 
         if (this.tableModel.listDataColumn.isEmpty())
@@ -265,7 +272,9 @@ public class CatalogModel {
      */
     public List<BEvent> synchronizeModel( boolean allowModifyStructure) {
         List<BEvent> listEvents = new ArrayList<>();
-
+        // BDM ? No synchronization is needed.
+        if (this.type == TypeModel.BDM)
+            return listEvents;
         // check and modify
         TableUpdate tableUpdate = new TableUpdate();
         ConnectionResult conResult = DatasourceConnection.getConnection(datasourceName);

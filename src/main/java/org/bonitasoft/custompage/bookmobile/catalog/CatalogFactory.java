@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.bonitasoft.custompage.bookmobile.catalog.CatalogModel.TypeModel;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 
@@ -57,19 +58,32 @@ public class CatalogFactory {
         List<BEvent> listEvents = loadCatalogModel();
         return mapCatalogModel.get( id );
     }
-    
+    /**
+     * Find by the bdm name. The ID is created 
+     * @param name
+     * @return
+     */
+    public CatalogModel findByBdmName(String name ) {
+        List<BEvent> listEvents = loadCatalogModel();
+        for (CatalogModel model : mapCatalogModel.values()) {
+            if (model.type == TypeModel.BDM && model.name.equals( name))
+                return model;
+        }
+        return null;
+    }
     public List<BEvent> setModel( CatalogModel model ) {
         mapCatalogModel.put( model.getId(), model);
         return saveCatalogModel( );
     }
     
+    public List<BEvent> removeModel( CatalogModel model ) {
+        mapCatalogModel.remove( model.getId());
+        return saveCatalogModel( );
+    }
     public List<CatalogModel> getListModel() {
         return new ArrayList( mapCatalogModel.values() );
     }
     
-    public List<String> getListBdm() {
-        return Arrays.asList("BDM1", "BDM2");
-    }
     
     
     

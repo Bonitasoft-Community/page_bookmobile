@@ -59,7 +59,7 @@ import org.bonitasoft.engine.service.TenantServiceSingleton;
 
 import org.bonitasoft.custompage.bookmobile.BookMobileAPI;
 import org.bonitasoft.custompage.bookmobile.BookMobileParameter;
-
+import org.bonitasoft.custompage.bookmobile.tool.CastData;
 
 public class Actions {
 
@@ -115,45 +115,57 @@ public class Actions {
              BookMobileAPI bookMobileAPI = new BookMobileAPI();
            	
 			if ("init".equals(action)) {
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromTenantId( tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.init( bookMobileParameter ).getMap());
 			}
             else if ("getModel".equals(action)) {
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromTenantId( tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
                 bookMobileParameter.id = Long.parseLong( request.getParameter("id"));
                 actionAnswer.responseMap.putAll( bookMobileAPI.getModel( bookMobileParameter ).getMap());
             }
-            
+            else if ("getBdmDefinition".equals(action)) {
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
+                bookMobileParameter.name = request.getParameter("name");
+                actionAnswer.responseMap.putAll( bookMobileAPI.getBdmDefinition( bookMobileParameter ).getMap());
+            }
+            else if ("dropmodel".equals(action)) {
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
+                bookMobileParameter.id = CastData.getLong( request.getParameter("id"),null);
+                bookMobileParameter.name = request.getParameter("name");
+                bookMobileParameter.type = request.getParameter("type");
+                actionAnswer.responseMap.putAll( bookMobileAPI.dropModel( bookMobileParameter ).getMap());
+            }
+			
             else if ("populateFromTable".equals(action)) {
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( paramJsonSt, tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( paramJsonSt, apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.populateModel(bookMobileParameter ).getMap());
             }
             else if ("updateModel".equals(action)) {
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
                 logger.info("#### log: action[updateModel] json="+accumulateJson);
                 
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.updateModel(bookMobileParameter ).getMap());
             }
             else if ("searchDatas".equals(action)) {
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
                 logger.info("#### log: action[searchDatas] json="+accumulateJson);
                 
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.searchDatas( bookMobileParameter ).getMap());
             }
             else if ("addData".equals(action)) {
                     String accumulateJson = (String) httpSession.getAttribute("accumulate" );
                     logger.info("#### log: action[addData] json="+accumulateJson);
                     
-                    BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, tenantId );
+                    BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
                     actionAnswer.responseMap.putAll( bookMobileAPI.addData( bookMobileParameter ).getMap());
             }
             else if ("updateData".equals(action)) {
                 String accumulateJson = (String) httpSession.getAttribute("accumulate" );
                 logger.info("#### log: action[updateData] json="+accumulateJson);
                 
-                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, tenantId );
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.updateData( bookMobileParameter ).getMap());
         }
             

@@ -14,7 +14,7 @@ public class CatalogResult {
     public enum StatusEnum { OK };
     public StatusEnum status = StatusEnum.OK;
     public List<BEvent> listEvents = new ArrayList<>();
-    CatalogModel catalogModel; 
+    public CatalogModel catalogModel; 
     public List<CatalogModel> listModels = new ArrayList<>();
     public List<String> listBdmAvailable = new ArrayList<>();
     

@@ -15,5 +15,16 @@ public class CastData {
             return defaultValue;
         }
     }
-
+    public static Long getLong(Object value, Long defaultValue) {
+        if (value==null)
+            return defaultValue;
+        if (value instanceof Long)
+            return (Long) value;
+        try {
+            return Long.valueOf( value.toString());
+        } catch(Exception e)
+        {
+            return defaultValue;
+        }
+    }
 }
