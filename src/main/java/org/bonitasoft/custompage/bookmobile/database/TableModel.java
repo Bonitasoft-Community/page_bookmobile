@@ -10,7 +10,7 @@ import org.bonitasoft.custompage.bookmobile.tool.CastData;
 public class TableModel {
 
     public enum COLTYPE {
-        LONG, BLOB, STRING, BOOLEAN, DECIMAL, TEXT
+        LONG, BLOB, STRING, BOOLEAN, DECIMAL, TEXT, LOCALDATE, LOCALDATETIME,OFFSETDATETIME
     }
 
     public static class DataColumn {

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.bonitasoft.custompage.bookmobile.catalog.CatalogModel;
 import org.bonitasoft.custompage.bookmobile.database.TableModel;
+import org.bonitasoft.custompage.bookmobile.database.TableModel.COLTYPE;
 import org.bonitasoft.log.event.BEvent;
 import org.bonitasoft.log.event.BEvent.Level;
 
@@ -75,7 +76,28 @@ public class DataRecord {
                 sqlOperation.sqlRequest.append(",");
             }
             sqlOperation.sqlRequest.append(tableModel.listDataColumn.get( i ).colName+"= ?");
-            sqlOperation.listParameters.add( data.get(tableModel.listDataColumn.get( i ).colName));
+            Object dataColumn = data.get(tableModel.listDataColumn.get( i ).colName);
+            if (dataColumn !=null && tableModel.listDataColumn.get( i ).colType == COLTYPE.LOCALDATE) {
+                // format must be 2021-05-21
+                // received :     2021-05-21T07:00:00.000Z
+                if (dataColumn.toString().length()>10 )
+                    dataColumn = dataColumn.toString().substring(0,10);
+            }
+            if (dataColumn !=null && tableModel.listDataColumn.get( i ).colType == COLTYPE.LOCALDATETIME) {
+                // format must be 2021-04-26T15:40:00
+                // received :     2021-05-22T00:30:00.000Z
+                if (dataColumn.toString().length()>"2021-04-26T15:40:00".length() )
+                    dataColumn = dataColumn.toString().substring(0,"2021-04-26T15:40:00".length());
+            }
+            
+            if (dataColumn !=null && tableModel.listDataColumn.get( i ).colType == COLTYPE.OFFSETDATETIME) {
+                // format must be 2021-04-26T22:40:00Z
+                // received :     2021-05-22T00:30:00.000Z
+                if (dataColumn.toString().length()>"2021-04-26T22:40:00".length() )
+                    dataColumn = dataColumn.toString().substring(0,"2021-04-26T15:40:00".length())+"Z";
+            }
+            
+            sqlOperation.listParameters.add(dataColumn );
         }
         sqlOperation.sqlRequest.append(" where "+colPersistenceId+"= ?");
         sqlOperation.listParameters.add( data.get(colPersistenceId));

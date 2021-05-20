@@ -118,7 +118,7 @@ appCommand.controller('BookMobileController',
 			console.log("history",jsonResult);
 			self.model 		= jsonResult.model;
 			self.editmodellistevents = jsonResult.listevents;
-			if (self.model.type==='bdm') {					
+			if (self.model.type==='BDM') {					
 				self.showModelPanel = "bdm";
 			} else {
 				self.showModelPanel = "model";
@@ -300,7 +300,34 @@ appCommand.controller('BookMobileController',
 		self.updatelistevents 			= jsonResult.listevents;
 	}
 	
-	
+	// user click on the button. the ctrl.data must be populate from the item 
+	// but some transformation are necessary. Example, the date is available as 2012-12-02 but must be transformed to  "2021-05-19T07:00:00.000Z"
+	this.editDate= function( item ) {
+		this.data={};
+
+		for (var i in this.showmodel.columns) {
+			let column = this.showmodel.columns[ i ];
+			let colvalue = item[ column.name ];
+			if (colvalue) {
+				if (column.type === 'LOCALDATE' && colvalue.length>0) {
+					debugger;
+					let colvaluest =	colvalue+"T00:00:00.000";
+					colvalue = new Date( colvaluest );
+				}
+				if (column.type === 'LOCALDATETIME' && colvalue.length>0) {
+					debugger;
+					let colvaluest =	colvalue+".000";
+					colvalue = new Date( colvaluest );
+				}
+				if (column.type === 'OFFSETDATETIME' && colvalue.length>0) {
+					debugger;					
+					let colvaluest =	colvalue.substring(0,colvalue.length-1)+".000";
+					colvalue = new Date( colvaluest );					
+				}
+			}
+			this.data[ column.name ] = colvalue;
+		}
+	}
 	this.updateData = function() {
 		console.log("BookMobile.updateData "+JSON.stringify( this.model));
 		this.updatelistevents= "";

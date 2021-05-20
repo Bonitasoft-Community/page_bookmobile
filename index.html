@@ -144,7 +144,7 @@
 
 				<tr ng-repeat="item in ctrl.listdatas">
 					<td>
-						<button class="btn btn-primary btn-sm" ng-click="ctrl.showAddData=false;ctrl.showeditdata=true; ctrl.data = item">
+						<button class="btn btn-primary btn-sm" ng-click="ctrl.showAddData=false;ctrl.showeditdata=true; ctrl.editDate( item )">
 							<span class="glyphicon glyphicon-pencil" /></span>
 						</button>
 					</td>
@@ -184,11 +184,32 @@
 									</div>
 									<div ng-if="column.type ==='BOOLEAN'">
 										<input ng-model="ctrl.data[ column.name ]" type="checkbox">
-										</textarea>
+										{{ctrl.data[ column.name ]}}
 									</div>
-									<div ng-if=" column.type !== 'DECIMAL' && column.type !== 'STRING' && column.type !=='TEXT' && column.type !== 'BLOB' && column.type !== 'BOOLEAN'">
+										<div ng-if="column.type ==='LOCALDATE'">
+										<input ng-model="ctrl.data[ column.name ]" type="date">
+										{{ctrl.data[ column.name ]}}
+										(LocalData, format is 2021-04-26)
+									</div>
+										<div ng-if="column.type ==='LOCALDATETIME'">
+										<input ng-model="ctrl.data[ column.name ]" type="datetime-local">
+										{{ctrl.data[ column.name ]}}
+										(LocalDateTime, format is 2021-04-26T15:40:00
+									</div>
+										<div ng-if="column.type ==='OFFSETDATETIME'">
+										<input ng-model="ctrl.data[ column.name ]" type="datetime-local">
+										{{ctrl.data[ column.name ]}}
+										(OffsetDateTime, format is 2021-04-26T22:40:00Z)
+									</div>
+									
+									
+									
+									
+									<div ng-if=" column.type !== 'DECIMAL' && column.type !== 'STRING' && column.type !=='TEXT' && column.type !== 'BLOB' && column.type !== 'BOOLEAN' && column.type !== 'LOCALDATE' && column.type !== 'LOCALDATETIME' && column.type !== 'OFFSETDATETIME'">
 										<input ng-model="ctrl.data[ column.name ]">
 									</div>
+									
+									
 									{{column.tip}}
 								</div>
 							</td>
@@ -238,6 +259,7 @@
 							<span class="glyphicon glyphicon-minus" />
 						</button>
 			</table>
+
 
 			<!--  Model -->
 			<div class="panel panel-info" ng-if="ctrl.showModelPanel ==='model'">
@@ -299,7 +321,7 @@
 										<span class="glyphicon glyphicon-minus" />
 									</button> <input ng-model="column.name" />
 								</td>
-								<td><select ng-model="column.type">
+								<td><select ng-model="column.type" disabled >
 										<option value="STRING">String</option>
 										<option value="LONG">Long</option>
 										<option value="DATE">Date</option>
@@ -307,6 +329,9 @@
 										<option value="BOOLEAN">Boolean</option>
 										<option value="BLOB">B/Clob (Text)</option>
 										<option value="DECIMAL">Decimal</option>
+										<option value="LOCALDATE">Local Date</option>
+										<option value="LOCALDATETIME">Local Date Time</option>
+										<option value="OFFSETDATETIME">Offset Date Time</option>
 								</select> <input ng-model="column.size" ng-if="column.type === 'STRING'" type="number" style="width: 50px;" /></td>
 
 								<td><input ng-model="column.label" size="20" style="width: 100px;" /></td>
@@ -374,17 +399,15 @@
 
 					<table class="table table-stripped table-condensed">
 						<tr>
-							<th>Name</th>
+							<th>Name (BDM)</th>
 							<th>Type (and size)</th>
 							<th>Label</th>
 							<th>Tip</th>
-							<th>Add in R/O</th>
-							<th>Update in R/O</th>
 						</tr>
 						<tbody ng-repeat="column in ctrl.model.columns">
 							<tr>
 								<td>{{column.name}}</td>
-								<td><select ng-model="column.type" readonly=true>
+								<td><select ng-model="column.type" disabled>
 										<option value="STRING">String</option>
 										<option value="LONG">Long</option>
 										<option value="DATE">Date</option>
@@ -392,26 +415,25 @@
 										<option value="BOOLEAN">Boolean</option>
 										<option value="BLOB">B/Clob (Text)</option>
 										<option value="DECIMAL">Decimal</option>
+										<option value="LOCALDATE">Local Date</option>
+										<option value="LOCALDATETIME">Local Date Time</option>
+										<option value="OFFSETDATETIME">Offset Date Time</option>
 								</select>
 									<div ng-if="column.type === 'STRING'">{{column.size}}</div></td>
 
 								<td><input ng-model="column.label" size="20" style="width: 100px;" /></td>
 								<td><input ng-model="column.tip" size="20" /></td>
-								<td><input type="checkbox" readonly ng-model="column.addReadOnly" title="The field is in Read Only when a record has to be added" /></td>
-								<td><input type="checkbox" readonly ng-model="column.updateReadOnly" title="The field is in Read Only when a record has to be updated" /></td>
 								
 							</tr>
 							<tr>
 								<td colspan="1"></td>
 								<td colspan="2"><i>Default value:</i><br>
 								<input ng-model="column.addDefaultValue" /></td>
-								<td colspan="6"><i>SQL Default value:</i><br>
-								<input ng-model="column.addSqlValue" size="200" style="width: 500px;" /></td>
 							</tr>
 
 						</tbody>
 					</table>
-					Model={{ctrl.model}}
+					
 					<button class="btn btn-primary" ng-click="ctrl.updateModel()">Add the model</button>
 					<div ng-bind-html="ctrl.getHtml( ctrl.editmodellistevents )"></div>
 

@@ -146,9 +146,12 @@ public class BdmFactory {
             return COLTYPE.LONG;
         if (fieldType == FieldType.BOOLEAN)
             return COLTYPE.BOOLEAN;
-        if (fieldType == FieldType.DATE || (fieldType == FieldType.LOCALDATE) || (fieldType == FieldType.LOCALDATETIME)
-                || (fieldType == FieldType.OFFSETDATETIME))
-            return COLTYPE.STRING;
+        if ((fieldType == FieldType.DATE) || (fieldType == FieldType.LOCALDATE))
+            return COLTYPE.LOCALDATE;
+        if (fieldType == FieldType.LOCALDATETIME)
+            return COLTYPE.LOCALDATETIME;
+        if (fieldType == FieldType.OFFSETDATETIME) 
+            return COLTYPE.OFFSETDATETIME;
         return COLTYPE.STRING;
     }
     /**
