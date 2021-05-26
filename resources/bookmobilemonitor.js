@@ -68,7 +68,8 @@ appCommand.controller('BookMobileController',
 						console.log("Redirected to the login page !");
 						window.location.reload();
 					}
-					console.log("history",jsonResult);
+					console.log("init",jsonResult);
+					self.inprogress=false;
 					self.listcatalog 		= jsonResult.listcatalog;
 					self.listbdmavailable	= jsonResult.listbdmavailable;
 				})
@@ -115,7 +116,8 @@ appCommand.controller('BookMobileController',
 				console.log("Redirected to the login page !");
 				window.location.reload();
 			}
-			console.log("history",jsonResult);
+			console.log("editmodel",jsonResult);
+			self.inprogress=false;
 			self.model 		= jsonResult.model;
 			self.editmodellistevents = jsonResult.listevents;
 			if (self.model.type==='BDM') {					
@@ -148,10 +150,11 @@ appCommand.controller('BookMobileController',
 				console.log("Redirected to the login page !");
 				window.location.reload();
 			}
-			console.log("history",jsonResult);
+			console.log("populatefromtable",jsonResult);
+			self.inprogress=false;
 			// do not update all, user may have modify the name, the description...
 			self.model.columns 								= jsonResult.model.columns;
-			self.model.colPersistenceIdName 		= jsonResult.model.colPersistenceIdName
+			self.model.colPersistenceIdName 				= jsonResult.model.colPersistenceIdName
 			self.editmodellistevents 						= jsonResult.listevents;
 		})
 		.error( function() {
@@ -171,7 +174,7 @@ appCommand.controller('BookMobileController',
 		console.log("updateModelCallback marker ="+this.marker+" self="+self.marker);
 		self.listcatalog 					= jsonResult.listcatalog;
 		self.model.id 						= jsonResult.model.id;
-		self.editmodellistevents 	= jsonResult.listevents;
+		self.editmodellistevents 			= jsonResult.listevents;
 	}
 	
 	this.addModelColumn = function() {
@@ -199,7 +202,7 @@ appCommand.controller('BookMobileController',
 				}
 				console.log("getBdmDefinition",jsonResult);
 				self.model 					= jsonResult.model;
-				self.editmodellistevents = jsonResult.listevents;
+				self.editmodellistevents 	= jsonResult.listevents;
 				self.inprogress=false;
 			})
 		.error( function() {
@@ -244,7 +247,8 @@ appCommand.controller('BookMobileController',
 					console.log("Redirected to the login page !");
 					window.location.reload();
 				}
-				console.log("history",jsonResult);
+				console.log("getModel",jsonResult);
+				self.inprogress=false;
 				self.showmodel 		= jsonResult.model;
 				self.showmodellistevents = jsonResult.listevents;
 			})
@@ -282,13 +286,13 @@ appCommand.controller('BookMobileController',
 	this.showeditdata=false;
 	
 	this.addData = function() {
-		console.log("BookMobile.addRecord "+JSON.stringify( this.model));
+		console.log("BookMobile.addRecord "+JSON.stringify( this.data));
 		this.updatelistevents= "";
 		this.inprogress=true;
 		
 		var param = {
 				'id': this.showmodel.id,
-				'data' : this.data
+				'data' : this.browserToServer()
 		}
 		this.sendPost("addData", param, this.addDataCallback);
 	}
@@ -300,42 +304,125 @@ appCommand.controller('BookMobileController',
 		self.updatelistevents 			= jsonResult.listevents;
 	}
 	
+	this.editData = function( item ) {
+		this.showAddData=false;
+		this.showeditdata=true; 
+		this.serverToBrowser( item );
+	}
+	
+	
 	// user click on the button. the ctrl.data must be populate from the item 
 	// but some transformation are necessary. Example, the date is available as 2012-12-02 but must be transformed to  "2021-05-19T07:00:00.000Z"
-	this.editDate= function( item ) {
+	this.serverToBrowser= function( item ) {
 		this.data={};
+		// By default, copy all values so we have all hidden value, like the persistenceid
+		this.data = JSON.parse(JSON.stringify(item)); 
+		let offset = new Date().getTimezoneOffset();
 
+		// then, we recalculate the value according the type
+		
 		for (var i in this.showmodel.columns) {
 			let column = this.showmodel.columns[ i ];
 			let colvalue = item[ column.name ];
 			if (colvalue) {
 				if (column.type === 'LOCALDATE' && colvalue.length>0) {
-					debugger;
 					let colvaluest =	colvalue+"T00:00:00.000";
 					colvalue = new Date( colvaluest );
+					// Date is then transforme according the timezone on the browser.
+					// Example (browser in California :  "2021-04-26" ==> "2021-04-26T07:00:00.000Z")
 				}
 				if (column.type === 'LOCALDATETIME' && colvalue.length>0) {
 					debugger;
+					this.data[ column.name+"_orig" ] = colvalue;
 					let colvaluest =	colvalue+".000";
 					colvalue = new Date( colvaluest );
 				}
 				if (column.type === 'OFFSETDATETIME' && colvalue.length>0) {
-					debugger;					
+					debugger;		
+					this.data[ column.name+"_orig" ] = colvalue;
+					// the date was transformed in the local time by the widget. So, 
+					// Date on server is "2021-05-20T21:49:00.000"
+					// then the new Date(2021-05-20T21:49:00.000 GMT-7) which is incorrect : 
+					//   ==> we wanted  2021-05-20T21:49:00.000 UTC
+					//   ==> or  2021-05-20T14:49:00.000 GTM-7
+					// so, we remove the Offset to get the correct time
+
 					let colvaluest =	colvalue.substring(0,colvalue.length-1)+".000";
-					colvalue = new Date( colvaluest );					
+					let dateServer = new Date( colvaluest );
+					colvalue = new Date( dateServer.getTime() - offset*60000); 
+					
 				}
 			}
 			this.data[ column.name ] = colvalue;
 		}
 	}
+	
+		// user click on the button. the ctrl.data must be populate from the item 
+	// but some transformation are necessary. Example, the date is available as 2012-12-02 but must be transformed to  "2021-05-19T07:00:00.000Z"
+	this.browserToServer= function(  ) {
+		debugger;
+		let offset = new Date().getTimezoneOffset();
+
+		// by default, copy the original value, then we collect all hidden value, like the persistenceid
+		let transform =  JSON.parse(JSON.stringify(this.data));
+		// then, we transform it
+
+		for (var i in this.showmodel.columns) {
+			let column = this.showmodel.columns[ i ];
+			let colvalue = this.data[ column.name ];
+			if (colvalue) {
+				if (column.type === 'LOCALDATE') {
+					// date was moved to the local time to display the correct date.
+					// Example, May 21 == transformed ==> "2021-05-21T07:00:00.000Z" to display the correct value or 21
+					// now, we just collect the first part, no matter the time zone
+					// collect "2021-05-21"
+					let colvaluest = colvalue.toISOString();
+					colvalue = colvaluest.substring(0,10);
+				}
+				if (column.type === 'LOCALDATETIME' ) {
+					debugger;
+					// to retrieve the value
+					// Date on server is "2021-05-20T21:49:00.000"
+					// Browser value is  "2021-05-20T21:49:00.000 GTM-7" ==> We translate the date to the current time zone, else the widget display a different time
+					// a toISOString will transform the date to UTC ==> we get a incorrect time.
+					// so, now, we have to translate this date in UTC : what time 21:49 GMT-7 is in UTC ? 14:49 GTM-7
+					// toISOString( 14:49 GTM-7 ) ==> 21:49:00Z
+					
+					let dateServer =new Date( colvalue.getTime() - offset*60000);
+					let dateServerSt =  dateServer.toISOString();
+					// to respect the Bonita format, we have to remove the Z at the end
+					// expected format is "2021-04-26T15:40:00"
+					colvalue = dateServerSt.substring(0,19);
+
+					// let colvaluest =	colvalue+".000";
+					// colvalue = new Date( colvaluest );
+				}
+				if (column.type === 'OFFSETDATETIME' ) {
+					debugger;					
+					// the date was transformed in the local time by the widget. So, 
+					// Date on server is "2021-05-20T21:49:00.000"
+					// Widget display 14:49 GMT-7
+					// transform this 14:49 toISOString => 21:49:00Z that what we want
+
+					// colvalue = new Date( colvaluest );
+					let dateServerSt =  colvalue.toISOString();	
+					colvalue = dateServerSt;
+				
+				}
+			}
+			transform[ column.name ] = colvalue;
+		}	
+		return transform;
+	}
+
 	this.updateData = function() {
-		console.log("BookMobile.updateData "+JSON.stringify( this.model));
+		console.log("BookMobile.updateData "+JSON.stringify( this.data));
 		this.updatelistevents= "";
 		this.inprogress=true;
 		
 		var param = {
 				'id': this.showmodel.id,
-				'data' : this.data
+				'data' :  this.browserToServer()
 		}
 		this.sendPost("updateData", param, this.updateDataCallback);
 	}

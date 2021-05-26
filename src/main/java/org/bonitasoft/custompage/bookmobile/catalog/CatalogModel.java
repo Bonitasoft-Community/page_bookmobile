@@ -356,6 +356,7 @@ public class CatalogModel {
                     listEvents.add( eventUpdateSuccess);
                 }
                 else
+                    // we expect to have one parameter updated
                     listEvents.add( eventUpdateIncorrect);
             } catch(Exception e) {
                 listEvents.add( new BEvent(eventSqlError, e, e.getMessage()));

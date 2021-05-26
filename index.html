@@ -77,10 +77,6 @@
 			<li ng-class="{active: active, disabled: false}" id="form-tab" heading="properties" active="true" title="Catalog" select="ctrl.navbaractiv == 'model'" class="{{ctrl.getNavClass('model')}}" style="">
 				<a ng-click="ctrl.navbaractiv = 'model';" class="ng-binding">Model</a>
 			</li>
-			<li ng-class="{active: active, disabled: false}" id="form-tab" heading="context" active="true" title="Calendars" select="ctrl.navbaractiv == 'calendars'" class="{{ctrl.getNavClass('calendars')}}"
-				style=""><a ng-click="ctrl.navbaractiv='calendars'" class="ng-binding">Calendars</a></li>
-			<li ng-class="{active: active, disabled: false}" id="form-tab" heading="analysis" active="true" title="Execution" select="ctrl.navbaractiv == 'country'" class="{{ctrl.getNavClass('country')}}"
-				style=""><a ng-click="ctrl.navbaractiv='country'" class="ng-binding">Countries and currency</a></li>
 		</ul>
 
 		<!--  ************************************************************  -->
@@ -102,8 +98,11 @@
 							<th>TableName</th>
 						</tr>
 						<tr ng-repeat="catalog in ctrl.listcatalog">
-							<td><button class="btn btn-primary btn-sm" ng-click="ctrl.useModel( catalog )">
-									<span class="glyphicon glyphicon-search" />
+							<td>
+								<button class="btn btn-primary btn-sm" ng-click="ctrl.useModel( catalog )">
+									<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+										<td><span class="glyphicon glyphicon-search" /></span></td>
+									</tr></table>
 								</button> &nbsp;{{catalog.name}}</td>
 							<td>{{catalog.description}}</td>
 							<td>{{catalog.datasource}}</td>
@@ -132,7 +131,12 @@
 
 
 
-			<button class="btn btn-primary" ng-click="ctrl.searchDatas()" ng-disabled="ctrl.showmodel === null">Search</button>
+			<button class="btn btn-primary" ng-click="ctrl.searchDatas()" 
+				ng-disabled="ctrl.showmodel === null">
+				<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+					<td>Search</td>
+				</tr></table>
+			</button>
 
 			<div ng-bind-html="ctrl.getHtml( ctrl.searchlistevents )"></div>
 
@@ -144,7 +148,7 @@
 
 				<tr ng-repeat="item in ctrl.listdatas">
 					<td>
-						<button class="btn btn-primary btn-sm" ng-click="ctrl.showAddData=false;ctrl.showeditdata=true; ctrl.editDate( item )">
+						<button class="btn btn-primary btn-sm" ng-click="ctrl.editData( item )">
 							<span class="glyphicon glyphicon-pencil" /></span>
 						</button>
 					</td>
@@ -158,10 +162,12 @@
 
 			<div class="panel panel-default" ng-if="ctrl.showmodel.name">
 				<div class="panel-heading">
-					<a ng-click="ctrl.showeditdata = ! ctrl.showeditdata" ng-if="! ctrl.showeditdata"><span class="glyphicon glyphicon-chevron-right"></span></a> <a ng-click="ctrl.showeditdata = ! ctrl.showeditdata"
+					<a ng-click="ctrl.showeditdata = ! ctrl.showeditdata" ng-if="! ctrl.showeditdata"><span class="glyphicon glyphicon-chevron-right"></span></a> 
+					<a ng-click="ctrl.showeditdata = ! ctrl.showeditdata"
 						ng-if="ctrl.showeditdata"><span class="glyphicon glyphicon-chevron-down"></span></a> Data&nbsp;
+					<!--  may be add, edit or.. nothing -->
 					<div ng-if="ctrl.showAddData" class="label label-primary">New data</div>
-					<div ng-if="! ctrl.showAddData" class="label label-primary">Edit a data</div>
+					<div ng-if="ctrl.showeditdata" class="label label-primary">Edit a data</div>
 
 					<button ng-click="ctrl.showAddData = true; ctrl.showeditdata=true; ctrl.data= ctrl.getDataDefaultValue()" ng-if="! ctrl.showAddData">Access the Add Record form</button>
 				</div>
@@ -188,18 +194,16 @@
 									</div>
 										<div ng-if="column.type ==='LOCALDATE'">
 										<input ng-model="ctrl.data[ column.name ]" type="date">
-										{{ctrl.data[ column.name ]}}
 										(LocalData, format is 2021-04-26)
 									</div>
 										<div ng-if="column.type ==='LOCALDATETIME'">
 										<input ng-model="ctrl.data[ column.name ]" type="datetime-local">
-										{{ctrl.data[ column.name ]}}
-										(LocalDateTime, format is 2021-04-26T15:40:00
+										<br>(LocalDateTime (no timezone): database value is {{ctrl.data[ column.name+"_orig" ]}}, format is 2021-04-26T15:40:00)
+										
 									</div>
 										<div ng-if="column.type ==='OFFSETDATETIME'">
-										<input ng-model="ctrl.data[ column.name ]" type="datetime-local">
-										{{ctrl.data[ column.name ]}}
-										(OffsetDateTime, format is 2021-04-26T22:40:00Z)
+										<input ng-model="ctrl.data[ column.name ]" type="datetime-local"><b>Your time zone</b>
+										<br>( OffsetDateTime (timeZone): time is calculated IN YOUR TIMEZONE, database value is {{ctrl.data[ column.name+"_orig" ]}}, format is 2021-04-26T22:40:00Z)
 									</div>
 									
 									
@@ -217,10 +221,19 @@
 						</tr>
 					</table>
 
-					<button ng-click="ctrl.addData()" ng-if="ctrl.showAddData" class="btn btn-primary">Add a Record</button>
-					<button ng-click="ctrl.updateData()" ng-if="! ctrl.showAddData" class="btn btn-primary">Update the Record</button>
-
-					<div ng-bind-html="ctrl.getHtml( ctrl.updatelistevents )"></div>
+					<button ng-click="ctrl.addData()" ng-if="ctrl.showAddData" class="btn btn-primary" ng-disabled="ctrl.inprogress">
+						<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+							<td>Add a Record</td>
+						</tr></table>
+					</button>
+					<button ng-click="ctrl.updateData()" ng-if="ctrl.showeditdata" class="btn btn-primary" ng-disabled="ctrl.inprogress">
+						<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+							<td>Update the Record</td>
+						</tr></table>
+					</button>
+			
+					<div style="margin-top: 10px" ng-bind-html="ctrl.getHtml( ctrl.updatelistevents )"></div>
+					
 				</div>
 			</div>
 		</div>
