@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.bonitasoft.custompage</groupId>
 	<artifactId>bonita-bookmobile</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 
 	<dependencies>
 		<dependency>
