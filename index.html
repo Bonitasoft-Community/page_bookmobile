@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="style/ng-modal.css">
 <link rel="stylesheet" href="style/angular-material.min.css">
 <link rel="stylesheet" href="style/toaster.css">
+<link rel="stylesheet" href="style/dropbox.css">
 
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
@@ -69,7 +70,7 @@
 
 
 		<!--  ************************************************************  -->
-		<!--  Catalog        	 										-->
+		<!--  Menu        	 										-->
 		<!--  ************************************************************  -->
 		<ul class="nav nav-tabs" ng-class="{'nav-stacked': vertical, 'nav-justified': justified}" style="border-bottom: 1px solid #c2c2c2;">
 			<li ng-class="{active: active, disabled: false}" id="form-tab" heading="properties" active="true" title="Catalog" select="ctrl.navbaractiv == 'catalog'" class="{{ctrl.getNavClass('catalog')}}"
@@ -82,7 +83,8 @@
 		<!--  ************************************************************  -->
 		<!--  Catalog        	 										-->
 		<!--  ************************************************************  -->
-		<div class="col-xs-12" ng-if="ctrl.navbaractiv == 'catalog'">
+		<!--  attention, do not use ng-if : with this tag, the drop down will not work -->				
+		<div class="col-xs-12" ng-show="ctrl.navbaractiv == 'catalog'">
 			<p>
 			<div class="panel panel-info">
 				<div class="panel-heading">
@@ -130,13 +132,37 @@
 			</div>
 
 
+			<table width="100%"><tr>
+				<td>
+					<button class="btn btn-primary" ng-click="ctrl.searchDatas()" 
+						ng-disabled="ctrl.showmodel === null">
+						<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+							<td>Search</td>
+						</tr></table>
+					</button>
 
-			<button class="btn btn-primary" ng-click="ctrl.searchDatas()" 
-				ng-disabled="ctrl.showmodel === null">
-				<table><tr><td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
-					<td>Search</td>
-				</tr></table>
-			</button>
+				</td><td>
+					<!--  Export data -->
+					<table><tr>
+						<td ng-if="ctrl.inprogress"><span class="Loading">.</span></td>
+						<td>
+						<a class="btn btn-info" href="?page=custompage_bookmobile&action=exportData&id={{ctrl.showmodel.id}}"
+							ng-disabled="ctrl.showmodel === null">
+						<span class="glyphicon glyphicon-download-alt"></span>Export</a>
+						
+					</tr></table>
+				</td><td >
+					<!--  import data -->
+					<span class="glyphicon glyphicon-upload"></span>Upload CSV data<br>
+					<div ng-show="ctrl.showmodel !== null">
+						<div ng-file-drop ng-model="importfiles" class="drop-box ng-isolate-scope ng-valid ng-dirty"
+									drag-over-class="{accept:'dragover', reject:'dragover-err', delay:100}"
+									multiple="true" allow-dir="false">Drop your CSV file to import here</div>
+						<div ng-no-file-drop class="drop-box" style="display: none;">File Drop is not supported for this browser</div>	
+					</div>
+						
+				</td></tr>
+			</table>
 
 			<div ng-bind-html="ctrl.getHtml( ctrl.searchlistevents )"></div>
 
@@ -148,12 +174,25 @@
 
 				<tr ng-repeat="item in ctrl.listdatas">
 					<td>
-						<button class="btn btn-primary btn-sm" ng-click="ctrl.editData( item )">
-							<span class="glyphicon glyphicon-pencil" /></span>
-						</button>
+						<div ng-if=" ! item.isdeleted">
+							<button class="btn btn-primary btn-sm" ng-click="ctrl.editData( item )">
+								<span class="glyphicon glyphicon-pencil" /></span>
+							</button>
+						</div>
+						<div ng-if="item.isdeleted">
+							<i>Deleted</i>
+						</div>
+							
 					</td>
 					<td ng-repeat="column in ctrl.showmodel.columns">{{item[ column.name ]}}
-					</th>
+					</td>
+					<td>
+						<div ng-if=" ! item.isdeleted">						
+							<button class="btn btn-danger btn-xs" ng-click="ctrl.deleteData( item )">
+								<span class="glyphicon glyphicon-trash" />
+							</button>
+						</div>
+					</td>
 				</tr>
 			</table>
 			<div ng-if="ctrl.showdata && ctrl.showdata.size() ==0">No datas</div>
@@ -169,7 +208,7 @@
 					<div ng-if="ctrl.showAddData" class="label label-primary">New data</div>
 					<div ng-if="ctrl.showeditdata" class="label label-primary">Edit a data</div>
 
-					<button ng-click="ctrl.showAddData = true; ctrl.showeditdata=true; ctrl.data= ctrl.getDataDefaultValue()" ng-if="! ctrl.showAddData">Access the Add Record form</button>
+					<button ng-click="ctrl.showAddData = true; ctrl.showeditdata=false; ctrl.showeditdata=true; ctrl.data= ctrl.getDataDefaultValue()" ng-if="! ctrl.showAddData">Access the Add Record form</button>
 				</div>
 				<div class="panel-body" ng-if="ctrl.showeditdata">
 					<table class="table table-striped table-hover table-bordered">
@@ -331,8 +370,9 @@
 							<tr>
 								<td>
 									<button class="btn btn-danger btn-xs" ng-click="ctrl.removeModelColumn( column )">
-										<span class="glyphicon glyphicon-minus" />
-									</button> <input ng-model="column.name" />
+										<span class="glyphicon glyphicon-Trash" />
+									</button>
+									 <input ng-model="column.name" />
 								</td>
 								<td><select ng-model="column.type" disabled >
 										<option value="STRING">String</option>
@@ -470,7 +510,10 @@
 
 	<script src="3rd-party/bootstrap/js/bootstrap.min.js"></script>
 	<script src="3rd-party/angular-bootstrap-tpls.min.js"></script>
-	<script src="3rd-party/angular-file-upload.js"></script>
+	
+	<script	src="3rd-party/angular-file-upload-shim.min.js"></script>
+	<script	src="3rd-party/angular-file-upload.min.js"></script>
+	
 	<script src="3rd-party/ng-google-chart.js"></script>
 	<script src="3rd-party/angular-sanitize.min.js"></script>
 	<script src="3rd-party/ng-modal.min.js"></script>

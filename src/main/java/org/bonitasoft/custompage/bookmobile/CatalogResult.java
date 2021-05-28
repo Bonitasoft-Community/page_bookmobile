@@ -39,7 +39,9 @@ public class CatalogResult {
         result.put("listevents", BEventFactory.getHtml(listEvents));
         return result;
     }
-    
+    public List<Map<String,Object>> getData() {
+        return listDatas;
+    }
     public void addData( Map<String,Object> data) {        
         listDatas.add( data );
     }

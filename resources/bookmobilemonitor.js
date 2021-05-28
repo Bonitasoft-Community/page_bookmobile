@@ -6,7 +6,7 @@
 (function() {
 
 
-var appCommand = angular.module('bookmobilemonitor', ['ui.bootstrap','ngSanitize', 'ngMaterial', 'ngCookies']); 
+var appCommand = angular.module('bookmobilemonitor', ['ui.bootstrap','ngSanitize', 'ngMaterial', 'angularFileUpload', 'ngCookies']); 
                                                                     
 
 // --------------------------------------------------------------------------
@@ -18,7 +18,7 @@ var appCommand = angular.module('bookmobilemonitor', ['ui.bootstrap','ngSanitize
 // Ping the server
 appCommand.controller('BookMobileController',
   
-	function ( $http, $scope, $sce, $filter,  $cookies  ) { // 
+	function ( $http, $scope, $sce, $filter,  $upload, $cookies  ) { // 
 
 	this.listevents='';
 	this.inprogress=false;
@@ -311,6 +311,46 @@ appCommand.controller('BookMobileController',
 	}
 	
 	
+	this.updateData = function() {
+		console.log("BookMobile.updateData "+JSON.stringify( this.data));
+		this.updatelistevents= "";
+		this.inprogress=true;
+		
+		var param = {
+				'id': this.showmodel.id,
+				'data' :  this.browserToServer()
+		}
+		this.sendPost("updateData", param, this.updateDataCallback);
+	}
+	
+	this.updateDataCallback = function ( jsonResult, self) {
+		console.log("updateDataCallback");
+		self.inprogress				= false;
+		self.updatelistevents 		= jsonResult.listevents;
+	}
+	
+	var deleteDataItem=null;
+	this.deleteData = function( item ) {
+		this.inprogress=true;
+		
+		this.data = item;
+		deleteDataItem = item;
+		var param = {
+				'id': this.showmodel.id,
+				'data' :  this.browserToServer()
+		}
+		this.sendPost("deleteData", param, this.deleteDataCallback);
+	}
+	
+	this.deleteDataCallback = function ( jsonResult, self) {
+		console.log("updateDataCallback");
+		self.inprogress				= false;
+		deleteDataItem.isdeleted	= true;
+
+		self.updatelistevents 		= jsonResult.listevents;
+	}
+		
+	
 	// user click on the button. the ctrl.data must be populate from the item 
 	// but some transformation are necessary. Example, the date is available as 2012-12-02 but must be transformed to  "2021-05-19T07:00:00.000Z"
 	this.serverToBrowser= function( item ) {
@@ -332,13 +372,11 @@ appCommand.controller('BookMobileController',
 					// Example (browser in California :  "2021-04-26" ==> "2021-04-26T07:00:00.000Z")
 				}
 				if (column.type === 'LOCALDATETIME' && colvalue.length>0) {
-					debugger;
 					this.data[ column.name+"_orig" ] = colvalue;
 					let colvaluest =	colvalue+".000";
 					colvalue = new Date( colvaluest );
 				}
 				if (column.type === 'OFFSETDATETIME' && colvalue.length>0) {
-					debugger;		
 					this.data[ column.name+"_orig" ] = colvalue;
 					// the date was transformed in the local time by the widget. So, 
 					// Date on server is "2021-05-20T21:49:00.000"
@@ -360,7 +398,7 @@ appCommand.controller('BookMobileController',
 		// user click on the button. the ctrl.data must be populate from the item 
 	// but some transformation are necessary. Example, the date is available as 2012-12-02 but must be transformed to  "2021-05-19T07:00:00.000Z"
 	this.browserToServer= function(  ) {
-		debugger;
+
 		let offset = new Date().getTimezoneOffset();
 
 		// by default, copy the original value, then we collect all hidden value, like the persistenceid
@@ -380,7 +418,6 @@ appCommand.controller('BookMobileController',
 					colvalue = colvaluest.substring(0,10);
 				}
 				if (column.type === 'LOCALDATETIME' ) {
-					debugger;
 					// to retrieve the value
 					// Date on server is "2021-05-20T21:49:00.000"
 					// Browser value is  "2021-05-20T21:49:00.000 GTM-7" ==> We translate the date to the current time zone, else the widget display a different time
@@ -398,7 +435,6 @@ appCommand.controller('BookMobileController',
 					// colvalue = new Date( colvaluest );
 				}
 				if (column.type === 'OFFSETDATETIME' ) {
-					debugger;					
 					// the date was transformed in the local time by the widget. So, 
 					// Date on server is "2021-05-20T21:49:00.000"
 					// Widget display 14:49 GMT-7
@@ -415,23 +451,7 @@ appCommand.controller('BookMobileController',
 		return transform;
 	}
 
-	this.updateData = function() {
-		console.log("BookMobile.updateData "+JSON.stringify( this.data));
-		this.updatelistevents= "";
-		this.inprogress=true;
-		
-		var param = {
-				'id': this.showmodel.id,
-				'data' :  this.browserToServer()
-		}
-		this.sendPost("updateData", param, this.updateDataCallback);
-	}
 	
-	this.updateDataCallback = function ( jsonResult, self) {
-		console.log("updateDataCallback");
-		self.inprogress=false;
-		self.updatelistevents 			= jsonResult.listevents;
-	}
 	
 	this.getListColums = function() {
 		return this.showmodel.columns;
@@ -673,7 +693,65 @@ appCommand.controller('BookMobileController',
 		return $sce.trustAsHtml(listevents);
 	}
 
-
+	/** Drop file / import data by upload*/
+	this.fileIsDropped = function( testfileimported ) {
+		var self=this;
+		self.listeventsconfig ='';
+		self.inprogress=true;
+		var param = { "id": this.showmodel.id,
+				"fileName": testfileimported
+				};
+		var json = encodeURIComponent( angular.toJson( param, false));
+		
+		$http.get( '?page=custompage_bookmobile&action=importData&paramjson='+json+'&t='+Date.now(), this.getHttpConfig() )
+		.success( function ( jsonResult, statusHttp, headers, config ) {
+				
+			// connection is lost ?
+			if (statusHttp==401 || typeof jsonResult === 'string') {
+				console.log("Redirected to the login page !");
+				window.location.reload();
+			}
+		
+			self.searchlistevents 		= jsonResult.listevents;
+			
+			
+			self.inprogress=false;
+		})
+		.error( function ( jsonResult ) {
+			self.inprogress=false});
+		
+	}
+	
+	var me = this;
+	$scope.$watch('importfiles', function() {
+		
+		console.log("Watch import file");
+		if (! $scope.importfiles) {
+			return;
+		}
+		console.log("Watch import file.lenght="+ $scope.importfiles.length);
+		for (var i = 0; i < $scope.importfiles.length; i++) {
+			me.wait=true;
+			var file = $scope.importfiles[i];
+			
+			// V6 : url is fileUpload
+			// V7 : /bonita/portal/fileUpload
+			$scope.upload = $upload.upload({
+				url: '/bonita/portal/fileUpload',
+				method: 'POST',
+				data: {myObj: $scope.myModelObj},
+				file: file
+			}).progress(function(evt) {
+// console.log('progress: ' + parseInt(100.0 * evt.loaded / evt.total) + '% file
+// :'+ evt.config.file.name);
+			}).success(function(data, status, headers, config) {
+			
+				console.log('file ' + config.file.name + 'is uploaded successfully. Response: ' + data);
+				me.fileIsDropped(data);
+			});
+		} // end $scope.importfiles
+	}); 
+	
 	
 });
 

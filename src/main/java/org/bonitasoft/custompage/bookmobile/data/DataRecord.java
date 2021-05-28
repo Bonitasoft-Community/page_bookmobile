@@ -1,6 +1,7 @@
 package org.bonitasoft.custompage.bookmobile.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,13 @@ public class DataRecord {
         dataRecord.data = data;
         return dataRecord;
     }
+    
+    public void setData( String col, Object value) {
+        if (data==null)
+            data=new HashMap<>();
+        data.put( col, value );
+    }
+    
     
     public class SqlOperation {
         public StringBuilder sqlRequest = new StringBuilder();
@@ -51,7 +59,11 @@ public class DataRecord {
                 if (! sqlValue.trim().startsWith("("))
                     sqlValue = "("+sqlValue+")";
                 listParameters.append(" "+sqlValue+" ");
-            } else {
+            } else if ( tableModel.listDataColumn.get( i ).addReadOnly){
+                sqlOperation.sqlRequest.append( tableModel.listDataColumn.get( i ).colName);
+                listParameters.append("?");
+                sqlOperation.listParameters.add( tableModel.listDataColumn.get( i ).addDefaultValue);                
+            } else { 
                 sqlOperation.sqlRequest.append( tableModel.listDataColumn.get( i ).colName);
                 listParameters.append("?");
                 sqlOperation.listParameters.add( data.get(tableModel.listDataColumn.get( i ).colName));
@@ -101,6 +113,20 @@ public class DataRecord {
         }
         sqlOperation.sqlRequest.append(" where "+colPersistenceId+"= ?");
         sqlOperation.listParameters.add( data.get(colPersistenceId));
+        return sqlOperation;
+    }
+    
+    /**
+     * Return the SqlDelete field
+     * @param colPersistenceId
+     * @param tableModel
+     * @return
+     */
+    public SqlOperation getSqlDelete(  String colPersistenceId, TableModel tableModel ) {
+        SqlOperation sqlOperation = new SqlOperation();
+        sqlOperation.sqlRequest.append("delete from  "+tableModel.tableName+" where "+colPersistenceId+" = ?");
+        sqlOperation.listParameters.add( data.get(colPersistenceId));
+        
         return sqlOperation;
     }
 }

@@ -20,6 +20,7 @@ public class BookMobileParameter {
     public static final String CST_MODEL_PROFILENAMEREAD= "profileNameRead";
     public static final String CST_MODEL_PROFILENAMEWRITE= "profileNameWrite";
 
+    public static final String CST_FILENAME = "fileName";
     public static final String CST_DATA = "data";
     
     public static final String CST_DATA_FORM = "form";
@@ -41,6 +42,11 @@ public class BookMobileParameter {
     
     public Map<String,Object> data;
     
+    /**
+     * use to import data
+     */
+    public String fileName;
+    
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static BookMobileParameter getInstanceFromJsonSt( String jsonSt, APISession apiSession) {
         BookMobileParameter bookMobileParameter = new BookMobileParameter();
@@ -54,6 +60,7 @@ public class BookMobileParameter {
         bookMobileParameter.tablename                   = (String) jsonHash.get( CST_MODEL_TABLENAME);
         bookMobileParameter.persistenceidname           = (String) jsonHash.get( CST_MODEL_PERSISTENCEIDNAME);
         bookMobileParameter.data                        = (Map) jsonHash.get( CST_DATA );
+        bookMobileParameter.fileName                    = (String) jsonHash.get( CST_FILENAME);
         bookMobileParameter.allowModificationStructure  =false;
         if (jsonHash.get( CST_MODEL_ALLOW_MODIFY_STRUCTURE)!=null)
             bookMobileParameter.allowModificationStructure  = "true".equalsIgnoreCase( jsonHash.get( CST_MODEL_ALLOW_MODIFY_STRUCTURE).toString());
@@ -70,6 +77,8 @@ public class BookMobileParameter {
         
         if (bookMobileParameter.maxData >1000)
             bookMobileParameter.maxData=1000;
+        if (bookMobileParameter.maxData <1)
+            bookMobileParameter.maxData=1;
 
         return bookMobileParameter;
     }
@@ -77,6 +86,8 @@ public class BookMobileParameter {
     public static BookMobileParameter getInstanceFromApiSession( APISession apiSession) {
         BookMobileParameter bookMobileParameter = new BookMobileParameter();
         bookMobileParameter.apiSession = apiSession;
+        bookMobileParameter.maxData =20;
+
         return bookMobileParameter;
     }
 }

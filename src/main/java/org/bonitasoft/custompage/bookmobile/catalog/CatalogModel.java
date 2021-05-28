@@ -3,6 +3,7 @@ package org.bonitasoft.custompage.bookmobile.catalog;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,11 @@ public class CatalogModel {
         }
         return null;
     }
+    
+    public List<DataColumn> getColumns() {
+        return this.tableModel.listDataColumn;
+    }
+        
     public long getId() {
         return id;
     }
@@ -336,8 +342,16 @@ public class CatalogModel {
         return listEvents;
     }
 
-    public List<BEvent> dataDelete(long dataId) {
+    /**
+     * Delete the data.
+     * @param dataRecord
+     * @return
+     */
+    public List<BEvent> deleteData(DataRecord dataRecord) {
         List<BEvent> listEvents = new ArrayList<>();
+        SqlOperation sqlRequest = dataRecord.getSqlDelete( colPersistenceId, tableModel );
+        listEvents.addAll( executeSqlUpdate( sqlRequest,1 ));
+
         return listEvents;
 
     }
@@ -368,5 +382,6 @@ public class CatalogModel {
         }
         return listEvents;
     }
+   
 
 }

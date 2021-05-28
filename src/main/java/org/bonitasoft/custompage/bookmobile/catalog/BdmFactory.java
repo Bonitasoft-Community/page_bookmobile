@@ -123,8 +123,16 @@ public class BdmFactory {
                     } else {
                         // collection : just ignore it
                     }
-                    
                 }
+                // add the PersistenceID column
+                TableModel.DataColumn columnPersistenceId = catalogModel.tableModel.addColumn( catalogModel.colPersistenceId, COLTYPE.LONG);
+                columnPersistenceId.addSqlValue = "select max(persistenceid)+1 from "+catalogModel.tableModel.tableName;
+                columnPersistenceId.addReadOnly=true;
+                columnPersistenceId.updateReadOnly=true;
+                
+                TableModel.DataColumn columnPersistenceVersion = catalogModel.tableModel.addColumn( "PERSISTENCEVERSION", COLTYPE.LONG);
+                columnPersistenceVersion.addReadOnly=true;
+                columnPersistenceVersion.updateReadOnly=true;
              
             }
         }

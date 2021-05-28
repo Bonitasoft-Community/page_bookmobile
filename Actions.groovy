@@ -96,6 +96,7 @@ public class Actions {
                 return actionAnswer;
             }
             actionAnswer.isManaged=true;
+            actionAnswer.isResponseMap=true; // default
             
             // Hello
             APISession apiSession = pageContext.getApiSession();
@@ -106,13 +107,16 @@ public class Actions {
             long tenantId = apiSession.getTenantId();          
             TenantServiceAccessor tenantServiceAccessor = TenantServiceSingleton.getInstance(tenantId);             
             //Make sure no action is executed if the CSRF protection is active and the request header is invalid
-            if (! TokenValidator.checkCSRFToken(request, response)) {
-                logger.severe("#### log:Actions  Token Validator failed on action["+action+"] !");
-                actionAnswer.isResponseMap=false;
-                return actionAnswer;
+            if (! ("exportData".equals(action) || "importData".equals(action))) {
+                if (! TokenValidator.checkCSRFToken(request, response)) {
+                    logger.severe("#### log:Actions  Token Validator failed on action["+action+"] !");
+                    actionAnswer.isResponseMap=false;
+                    return actionAnswer;
+                }
             }
- 
-             BookMobileAPI bookMobileAPI = new BookMobileAPI();
+            
+            
+            BookMobileAPI bookMobileAPI = new BookMobileAPI();
            	
 			if ("init".equals(action)) {
                 BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
@@ -130,7 +134,7 @@ public class Actions {
             }
             else if ("dropmodel".equals(action)) {
                 BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
-                bookMobileParameter.id = CastData.getLong( request.getParameter("id"),null);
+                bookMobileParameter.id   = CastData.getLong( request.getParameter("id"),null);
                 bookMobileParameter.name = request.getParameter("name");
                 bookMobileParameter.type = request.getParameter("type");
                 actionAnswer.responseMap.putAll( bookMobileAPI.dropModel( bookMobileParameter ).getMap());
@@ -167,7 +171,41 @@ public class Actions {
                 
                 BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
                 actionAnswer.responseMap.putAll( bookMobileAPI.updateData( bookMobileParameter ).getMap());
-        }
+            }
+            else if ("deleteData".equals(action)) {
+                
+                String accumulateJson = (String) httpSession.getAttribute("accumulate" );
+                logger.info("#### log: action[deleteData] json="+accumulateJson);
+                
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( accumulateJson, apiSession );
+                actionAnswer.responseMap.putAll( bookMobileAPI.deleteData( bookMobileParameter ).getMap());
+            }
+            else if ("exportData".equals(action)) {
+                
+                logger.info("#### log: action[exportData]");
+                response.addHeader("content-disposition", "attachment; filename=Export.csv");
+                response.addHeader("content-type", "application/CSV");
+                OutputStream output = response.getOutputStream();
+
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromApiSession( apiSession );
+                bookMobileParameter.id = CastData.getLong( request.getParameter( "id" ),null );
+                actionAnswer.responseMap.putAll( bookMobileAPI.exportData( bookMobileParameter, output ).getMap());
+          
+                output.flush();
+                output.close();
+                actionAnswer.isResponseMap=false;
+                return actionAnswer;
+
+            }
+            else if ("importData".equals(action)) {
+                logger.info("#### log: action[importData]");
+
+                BookMobileParameter bookMobileParameter = BookMobileParameter.getInstanceFromJsonSt( paramJsonSt, apiSession );
+                actionAnswer.responseMap.putAll( bookMobileAPI.importData( bookMobileParameter, pageResourceProvider.getPageDirectory() ).getMap());
+            
+            }
+                   
+		     
             
             else if ("collectReset".equals(action)) {
                 httpSession.setAttribute("accumulate", "" );
@@ -185,7 +223,6 @@ public class Actions {
                 accumulateJson+=paramJsonPartial;
                 httpSession.setAttribute("accumulate", accumulateJson );
                 actionAnswer.responseMap.put("status", "ok");
-
             }
 
                 
@@ -199,131 +236,9 @@ public class Actions {
             actionAnswer.isResponseMap=true;
             actionAnswer.responseMap.put("Error", "log:Groovy Exception ["+e.toString()+"] at "+exceptionDetails);
             
-
-            
             return actionAnswer;
         }
     }
 
-    /**
-		to create a simple chart
-		*/
-		public static class ActivityTimeLine
-		{
-				public String activityName;
-				public Date dateBegin;
-				public Date dateEnd;
-				
-				public static ActivityTimeLine getActivityTimeLine(String activityName, int timeBegin, int timeEnd)
-				{
-					Calendar calBegin = Calendar.getInstance();
-					calBegin.set(Calendar.HOUR_OF_DAY , timeBegin);
-					Calendar calEnd = Calendar.getInstance();
-					calEnd.set(Calendar.HOUR_OF_DAY , timeEnd);
-					
-						ActivityTimeLine oneSample = new ActivityTimeLine();
-						oneSample.activityName = activityName;
-						oneSample.dateBegin		= calBegin.getTime();
-						oneSample.dateEnd 		= calEnd.getTime();
-						
-						return oneSample;
-				}
-				public long getDateLong()
-				{ return dateBegin == null ? 0 : dateBegin.getTime(); }
-		}
-		
-		
-		/** create a simple chart 
-		*/
-		public static String getChartTimeLine(String title, List<ActivityTimeLine> listSamples){
-				Logger logger = Logger.getLogger("org.bonitasoft");
-				
-				/** structure 
-				 * "rows": [
-           {
-        		 c: [
-        		      { "v": "January" },"
-                  { "v": 19,"f": "42 items" },
-                  { "v": 12,"f": "Ony 12 items" },
-                ]
-           },
-           {
-        		 c: [
-        		      { "v": "January" },"
-                  { "v": 19,"f": "42 items" },
-                  { "v": 12,"f": "Ony 12 items" },
-                ]
-           },
-
-				 */
-				String resultValue="";
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy,MM,dd,HH,mm,ss,SSS");
-				
-				for (int i=0;i<listSamples.size();i++)
-				{
-					logger.info("sample [i] : "+listSamples.get( i ).activityName+"] dateBegin["+simpleDateFormat.format( listSamples.get( i ).dateBegin)+"] dateEnd["+simpleDateFormat.format( listSamples.get( i ).dateEnd) +"]");
-						if (listSamples.get( i ).dateBegin!=null &&  listSamples.get( i ).dateEnd != null)
-								resultValue+= "{ \"c\": [ { \"v\": \""+listSamples.get( i ).activityName+"\" }," ;
-								resultValue+= " { \"v\": \""+listSamples.get( i ).activityName +"\" }, " ;
-								resultValue+= " { \"v\": \"Date("+ simpleDateFormat.format( listSamples.get( i ).dateBegin) +")\" }, " ;
-								resultValue+= " { \"v\": \"Date("+ simpleDateFormat.format( listSamples.get( i ).dateEnd) +")\" } " ;
-								resultValue+= "] },";
-				}
-				if (resultValue.length()>0)
-						resultValue = resultValue.substring(0,resultValue.length()-1);
-				
-				String resultLabel = "{ \"type\": \"string\", \"id\": \"Role\" },{ \"type\": \"string\", \"id\": \"Name\"},{ \"type\": \"datetime\", \"id\": \"Start\"},{ \"type\": \"datetime\", \"id\": \"End\"}";
-				
-				String valueChart = "	{"
-					   valueChart += "\"type\": \"Timeline\", ";
-					  valueChart += "\"displayed\": true, ";
-					  valueChart += "\"data\": {";
-					  valueChart +=   "\"cols\": ["+resultLabel+"], ";
-					  valueChart +=   "\"rows\": ["+resultValue+"] ";
-					  /*
-					  +   "\"options\": { "
-					  +         "\"bars\": \"horizontal\","
-					  +         "\"title\": \""+title+"\", \"fill\": 20, \"displayExactValues\": true,"
-					  +         "\"vAxis\": { \"title\": \"ms\", \"gridlines\": { \"count\": 100 } }"
-					  */
-					  valueChart +=  "}";
-					  valueChart +="}";
-// 				+"\"isStacked\": \"true\","
- 	          
-//		    +"\"displayExactValues\": true,"
-//		    
-//		    +"\"hAxis\": { \"title\": \"Date\" }"
-//		    +"},"
-				logger.info("Value1 >"+valueChart+"<");
-
-				
-				return valueChart;		
-		}
     
-		/**
-		 public static void testProcessStartedUserName( APISession apiSession ) {
-		     SearchRelationAPI searchRelation = new SearchRelationAPI( apiSession );
-                
-		     -- SearchOptionsBuilderRelation sob = new SearchOptionsBuilderRelation( 0,10);
-		        sob.filter(org.bonitasoft.search.UserSearchDescriptorRelation.USER_NAME, "Walter.Bates");
-		        sob.relation(org.bonitasoft.search.ProcessInstanceSearchDescriptorRelation.STARTED_BY);
-		       --
-		        SearchOptionsBuilderRelation sob = new SearchOptionsBuilderRelation(0,10);
-		        sob.filter(org.bonitasoft.search.ContactDataSearchDescriptorRelation.EMAIL, "Walter.Bates@bonitasoft.com");
-		        sob.filter(org.bonitasoft.search.ContactDataSearchDescriptorRelation.PERSONAL, Boolean.FALSE);
-		        
-		        // we don't have the filterRelation. So, here we give this kind of relation, saying "Please link the second table by the STARTEDBY
-		        sob.relation(org.bonitasoft.search.ProcessInstanceSearchDescriptorRelation.STARTED_BY);
-                sob.relation(org.bonitasoft.search.ProcessInstanceSearchDescriptorRelation.PROCESS_DEFINITION_ID);
-                sob.relation(org.bonitasoft.search.ContactDataSearchDescriptorRelation.USERID);
-		        sob.filter(org.bonitasoft.search.ProcessDeploymentInfoSearchDescriptorRelation.NAME, "TestProcess");
-		        try {
-		            searchRelation.search(ProcessInstance.class, sob.done());
-		        } catch (Exception e) {
-		            logger.severe("testProcessStartedUserName >"+e.getMessage()+"<");
-
-		        }
-		        
-		    }
-		    */
 }

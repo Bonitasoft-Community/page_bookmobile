@@ -110,7 +110,7 @@ public class Index implements PageController {
 			}
 			loggerCustomPage.info("#### "+pageName+":Groovy , ResponseMap="+actionAnswer.responseMap.size() );
 			
-			if (actionAnswer.responseMap.size()>0)
+			if (actionAnswer.isResponseMap && actionAnswer.responseMap.size()>0)
 			{
 				response.setCharacterEncoding("UTF-8");
 				response.addHeader("content-type", "application/json");
